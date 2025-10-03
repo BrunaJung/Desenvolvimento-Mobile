@@ -35,6 +35,9 @@ fun SimpleCalculator() {
     var number1 by rememberSaveable { mutableStateOf("") }
     var number2 by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf<String?>(null) }
+    var showSaveButton by rememberSaveable { mutableStateOf(false) }
+    var showHistory by rememberSaveable { mutableStateOf(false) }
+    var history by remember { mutableStateOf(listOf<String>()) }
 
     fun calculate(op: String) {
         val num1 = number1.toDoubleOrNull()
@@ -42,6 +45,7 @@ fun SimpleCalculator() {
 
         if (num1 == null || num2 == null) {
             result = "Digite números válidos!"
+            showSaveButton = false
             return
         }
 
@@ -52,6 +56,8 @@ fun SimpleCalculator() {
             "/" -> if (num2 != 0.0) (num1 / num2).toString() else "Erro: Divisão por zero"
             else -> ""
         }
+
+        showSaveButton = true
     }
 
     Column(
@@ -97,5 +103,38 @@ fun SimpleCalculator() {
             fontSize = 28.sp,
             color = MaterialTheme.colorScheme.primary
         )
+
+        if (showSaveButton && !result.isNullOrBlank()) {
+            Button(
+                onClick = {
+                    history = history + "Conta: $number1 e $number2 = $result"
+                    showSaveButton = false // Oculta o botão depois de salvar
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Salvar resultado")
+            }
+        }
+
+        Button(
+            onClick = { showHistory = !showHistory },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (showHistory) "Ocultar Histórico" else "Mostrar Histórico")
+        }
+
+        if (showHistory) {
+            Column(
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
+                if (history.isEmpty()) {
+                    Text("Nenhum cálculo salvo ainda.")
+                } else {
+                    history.forEach { entry ->
+                        Text(text = entry)
+                    }
+                }
+            }
+        }
     }
 }
